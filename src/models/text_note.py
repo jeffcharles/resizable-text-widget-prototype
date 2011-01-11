@@ -6,8 +6,11 @@ Created on 2011-01-11
 
 class TextNote(object):
 
-    def __init__(self, text=''):
+    def __init__(self, text='', xpos=0, ypos=0):
         self._text = text
+        
+        self._xpos = xpos
+        self._ypos = ypos
     
     def _get_text(self):
         return self._text
