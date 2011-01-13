@@ -25,20 +25,27 @@ class MainWindow(wx.Frame):
     def OnMainPanelClick(self, event):
         xpos, ypos = event.GetPositionTuple()
         self._controller.create_text_note(xpos, ypos)
-        
-        text_node = TextNode(self._controller, self.main_panel, pos=(xpos, ypos))
-        text_node.Bind(wx.EVT_TEXT, self.OnTextChanged)
+        TextNode(self._controller, self.main_panel, pos=(xpos, ypos))
     
     def OnTextChanged(self, event):
         event.GetEventObject().OnTextChanged(event.GetEventObject().Value)
 
-class TextNode(wx.TextCtrl):
+class TextNode(wx.Panel):
     
     def __init__(self, controller, parent, pos):
-        super(TextNode, self).__init__(parent, pos=pos, size=wx.Size(200, 50), style=wx.TE_MULTILINE)
+        super(TextNode, self).__init__(parent, pos=pos, size=wx.Size(200, 50))
         self._controller = controller
         xpos, ypos = pos
         self._text_note = self._controller.create_text_note(xpos, ypos)
+        
+        self.text_ctrl = wx.TextCtrl(self, style=wx.TE_MULTILINE)
+        self.text_ctrl.Bind(wx.EVT_TEXT, self.OnTextChanged)
+        self.sizer = wx.BoxSizer()
+        self.sizer.Add(self.text_ctrl, 1, wx.EXPAND)
+        
+        self.SetAutoLayout(True)
+        self.SetSizer(self.sizer)
+        self.Layout()
     
     def OnTextChanged(self, new_text):
         self._controller.text_changed(self._text_note, new_text)
