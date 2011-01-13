@@ -26,9 +26,6 @@ class MainWindow(wx.Frame):
         xpos, ypos = event.GetPositionTuple()
         self._controller.create_text_note(xpos, ypos)
         TextNode(self._controller, self.main_panel, pos=(xpos, ypos))
-    
-    def OnTextChanged(self, event):
-        event.GetEventObject().OnTextChanged(event.GetEventObject().Value)
 
 class TextNode(wx.Panel):
     
@@ -46,9 +43,9 @@ class TextNode(wx.Panel):
         self.SetAutoLayout(True)
         self.SetSizer(self.sizer)
         self.Layout()
-    
-    def OnTextChanged(self, new_text):
-        self._controller.text_changed(self._text_note, new_text)
+        
+    def OnTextChanged(self, event):
+        self._controller.text_changed(self._text_note, event.GetEventObject().Value)
 
 app = wx.App(redirect=False)
 top = MainWindow()
