@@ -26,7 +26,7 @@ class MainWindow(wx.Frame):
         xpos, ypos = event.GetPositionTuple()
         self._controller.create_text_note(xpos, ypos)
         
-        text_node = TextNode(self.main_panel, pos=(xpos, ypos))
+        text_node = TextNode(self._controller, self.main_panel, pos=(xpos, ypos))
         text_node.Bind(wx.EVT_TEXT, self.OnTextChanged)
     
     def OnTextChanged(self, event):
@@ -34,9 +34,9 @@ class MainWindow(wx.Frame):
 
 class TextNode(wx.TextCtrl):
     
-    def __init__(self, parent, pos):
-        super(TextNode, self).__init__(parent, pos=pos, style=wx.TE_MULTILINE)
-        self._controller = MainController()
+    def __init__(self, controller, parent, pos):
+        super(TextNode, self).__init__(parent, pos=pos, size=wx.Size(200, 50), style=wx.TE_MULTILINE)
+        self._controller = controller
         xpos, ypos = pos
         self._text_note = self._controller.create_text_note(xpos, ypos)
     
