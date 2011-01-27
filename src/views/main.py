@@ -65,32 +65,64 @@ class ResizeManager(object):
                 self._top = 0 < ypos <= 5
                 self._bottom = 0 < (p_height - ypos) <= 5
             
-            if True in [self._left, self._right, self._up, self._down]:
+            if True in [self._left, self._right, self._top, self._bottom]:
                 old_xpos, old_ypos = self.selected_element.GetPositionTuple()
                 old_width, old_height = self.selected_element.GetSize()
+                
+                NO_CHANGE = 0
+                CHANGE_W_OFFSET = 1
+                CHANGE_WO_OFFSET = 2
             
-            if self._top and self._left:
-                new_xpos = event.GetX() + old_xpos
-                new_ypos = event.GetY() + old_ypos
-                new_width = old_width + (old_xpos - new_xpos)
-                new_height = old_height + (old_ypos - new_ypos)
-            elif self._top and self._right:
-                new_xpos = old_xpos
-                new_ypos = event.GetY() + old_ypos
-                new_width = event.GetX()
-                new_height = old_height + (old_ypos - new_ypos)
-            elif self._bottom and self._left:
-                new_xpos = event.GetX() + old_xpos
-                new_ypos = old_ypos
-                new_width = old_width + (old_xpos - new_xpos)
-                new_height = event.GetY()
-            elif self._bottom and self._right:
-                new_xpos = old_xpos
-                new_ypos = old_ypos
-                new_width = event.GetX()
-                new_height = event.GetY()
+                if self._top and self._left:
+                    xpos_change = True
+                    ypos_change = True
+                    width_change = CHANGE_W_OFFSET
+                    height_change = CHANGE_W_OFFSET
+                elif self._top and self._right:
+                    xpos_change = False
+                    ypos_change = True
+                    width_change = CHANGE_WO_OFFSET
+                    height_change = CHANGE_W_OFFSET
+                elif self._bottom and self._left:
+                    xpos_change = True
+                    ypos_change = False
+                    width_change = CHANGE_W_OFFSET
+                    height_change = CHANGE_WO_OFFSET
+                elif self._bottom and self._right:
+                    xpos_change = False
+                    ypos_change = False
+                    width_change = CHANGE_WO_OFFSET
+                    height_change = CHANGE_WO_OFFSET
+                elif self._top:
+                    xpos_change = False
+                    ypos_change = True
+                    width_change = NO_CHANGE
+                    height_change = CHANGE_W_OFFSET
+                elif self._bottom:
+                    xpos_change = False
+                    ypos_change = False
+                    width_change = NO_CHANGE
+                    height_change = CHANGE_WO_OFFSET
+                elif self._left:
+                    xpos_change = True
+                    ypos_change = False
+                    width_change = CHANGE_W_OFFSET
+                    height_change = NO_CHANGE
+                elif self._right:
+                    xpos_change = False
+                    ypos_change = False
+                    width_change = CHANGE_WO_OFFSET
+                    height_change = NO_CHANGE
+                
+                new_xpos = old_xpos + event.GetX() if xpos_change else old_xpos
+                new_ypos = old_ypos + event.GetY() if ypos_change else old_ypos
+                new_width = (old_width - event.GetX() if width_change == CHANGE_W_OFFSET 
+                                    else event.GetX() if width_change == CHANGE_WO_OFFSET
+                                    else old_width)
+                new_height = (old_height - event.GetY() if height_change == CHANGE_W_OFFSET
+                                      else event.GetY() if height_change == CHANGE_WO_OFFSET 
+                                      else old_height)
             
-            if True in [self._left, self._right, self._up, self._down]:
                 self.selected_element.Move(wx.Point(new_xpos, new_ypos))
                 self.selected_element.SetSize(wx.Size(new_width, new_height))
 
