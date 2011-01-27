@@ -37,6 +37,7 @@ class ResizeManager(object):
         self.selected_element = None
         self.resize_in_progress = False
         
+        self._cursor = None
         self._prev_xpos = None
         self._prev_ypos = None
         self._left = None
@@ -46,10 +47,44 @@ class ResizeManager(object):
         
         self._RESIZABLE_CONTROLS = (TextNode,)
     
+    def _ChangeMouseCursor(self, event):
+        xpos, ypos = event.GetPositionTuple()
+        p_width, p_height = event.GetEventObject().GetSizeTuple()
+
+        cursor_left = 0 < xpos <= 5
+        cursor_right = 0 < (p_width - xpos) <= 5
+        cursor_top = 0 < ypos <= 5
+        cursor_bottom = 0 < (p_height - ypos) <= 5
+        
+        if cursor_left and cursor_top:
+            self._cursor = wx.CURSOR_SIZENWSE
+        elif cursor_right and cursor_top:
+            self._cursor = wx.CURSOR_SIZENESW
+        elif cursor_left and cursor_bottom:
+            self._cursor = wx.CURSOR_SIZENESW
+        elif cursor_right and cursor_bottom:
+            self._cursor = wx.CURSOR_SIZENWSE
+        elif cursor_left:
+            self._cursor = wx.CURSOR_SIZEWE
+        elif cursor_right:
+            self._cursor = wx.CURSOR_SIZEWE
+        elif cursor_top:
+            self._cursor = wx.CURSOR_SIZENS
+        elif cursor_bottom:
+            self._cursor = wx.CURSOR_SIZENS
+        else:
+            self._cursor = wx.CURSOR_ARROW
+    
     def OnMouseMotion(self, event):
+        if type(event.GetEventObject()) in self._RESIZABLE_CONTROLS:
+            if self._cursor is None: 
+                self._ChangeMouseCursor(event)
+            event.GetEventObject().SetCursor(wx.StockCursor(self._cursor))
+        
         if not event.Dragging():
             self.selected_element = None
             self.resize_in_progress = False
+            self._cursor = None
             self._left = None
             self._right = None
             self._up = None
@@ -158,42 +193,12 @@ class TextNode(wx.Panel):
         self.sizer = wx.BoxSizer()
         self.sizer.Add(self.text_ctrl, 1, wx.ALL|wx.EXPAND, 5)
         
-        self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
         self.Bind(wx.EVT_MOTION, self._resize_manager.OnMouseMotion)
         
         self.SetAutoLayout(True)
         self.SetSizer(self.sizer)
         self.Layout()
     
-    def OnMouseMotion(self, event):
-        xpos, ypos = event.GetPositionTuple()
-        p_width, p_height = self.GetSizeTuple()
-
-        cursor_left = 0 < xpos <= 5
-        cursor_right = 0 < (p_width - xpos) <= 5
-        cursor_top = 0 < ypos <= 5
-        cursor_bottom = 0 < (p_height - ypos) <= 5
-        
-        if cursor_left and cursor_top:
-            cursor = wx.CURSOR_SIZENWSE
-        elif cursor_right and cursor_top:
-            cursor = wx.CURSOR_SIZENESW
-        elif cursor_left and cursor_bottom:
-            cursor = wx.CURSOR_SIZENESW
-        elif cursor_right and cursor_bottom:
-            cursor = wx.CURSOR_SIZENWSE
-        elif cursor_left:
-            cursor = wx.CURSOR_SIZEWE
-        elif cursor_right:
-            cursor = wx.CURSOR_SIZEWE
-        elif cursor_top:
-            cursor = wx.CURSOR_SIZENS
-        elif cursor_bottom:
-            cursor = wx.CURSOR_SIZENS
-        else:
-            cursor = wx.CURSOR_ARROW
-        self.SetCursor(wx.StockCursor(cursor))
-        
     def OnTextChanged(self, event):
         self._controller.text_changed(self._text_note, event.GetEventObject().Value)
 
