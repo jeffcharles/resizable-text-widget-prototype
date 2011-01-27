@@ -122,6 +122,13 @@ class ResizeManager(object):
                 new_height = (old_height - event.GetY() if height_change == CHANGE_W_OFFSET
                                       else event.GetY() if height_change == CHANGE_WO_OFFSET 
                                       else old_height)
+                
+                if new_width < self.selected_element.min_width:
+                    new_xpos = old_xpos
+                    new_width = self.selected_element.min_width
+                if new_height < self.selected_element.min_height:
+                    new_ypos = old_ypos
+                    new_height = self.selected_element.min_height
             
                 self.selected_element.Move(wx.Point(new_xpos, new_ypos))
                 self.selected_element.SetSize(wx.Size(new_width, new_height))
@@ -134,6 +141,8 @@ class TextNode(wx.Panel):
         xpos, ypos = pos
         self._text_note = self._controller.create_text_note(xpos, ypos)
         
+        self.min_width = 150
+        self.min_height = 50
         self._resize_manager = resize_manager
         
         self.text_ctrl = wx.TextCtrl(self, style=wx.TE_MULTILINE)
