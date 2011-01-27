@@ -48,14 +48,9 @@ class ResizeManager(object):
         self._RESIZABLE_CONTROLS = (TextNode,)
     
     def _ChangeMouseCursor(self, event):
-        xpos, ypos = event.GetPositionTuple()
-        p_width, p_height = event.GetEventObject().GetSizeTuple()
+        cursor_left, cursor_right, cursor_top, cursor_bottom = \
+            self._GetMousePositions(event.GetPositionTuple(), event.GetEventObject().GetSizeTuple())
 
-        cursor_left = 0 < xpos <= 5
-        cursor_right = 0 < (p_width - xpos) <= 5
-        cursor_top = 0 < ypos <= 5
-        cursor_bottom = 0 < (p_height - ypos) <= 5
-        
         if cursor_left and cursor_top:
             self._cursor = wx.CURSOR_SIZENWSE
         elif cursor_right and cursor_top:
@@ -75,6 +70,25 @@ class ResizeManager(object):
         else:
             self._cursor = wx.CURSOR_ARROW
     
+    def _GetMousePositions(self, event_pos, obj_size):
+        """
+        Returns a tuple of where the mouse is in relation to the event object.
+        
+        event_pos - a tuple of event positions by x and y coordinates (e.g., (3, 5))
+        obj_size - a tuple of event object's width and height (e.g., (4, 5))
+        
+        Returns a tuple of mouse positions by left, right, top, and bottom
+        """
+        xpos, ypos = event_pos
+        p_width, p_height = obj_size
+
+        cursor_left = 0 < xpos <= 5
+        cursor_right = 0 < (p_width - xpos) <= 5
+        cursor_top = 0 < ypos <= 5
+        cursor_bottom = 0 < (p_height - ypos) <= 5
+        
+        return (cursor_left, cursor_right, cursor_top, cursor_bottom)
+    
     def OnMouseMotion(self, event):
         if type(event.GetEventObject()) in self._RESIZABLE_CONTROLS:
             if self._cursor is None: 
@@ -87,8 +101,8 @@ class ResizeManager(object):
             self._cursor = None
             self._left = None
             self._right = None
-            self._up = None
-            self._down = None
+            self._top = None
+            self._bottom = None
             return
         
         if self.selected_element is None:
@@ -98,15 +112,10 @@ class ResizeManager(object):
             self.selected_element = None
             return
         
-        if [self._left, self._right, self._up, self._down] == [None, None, None, None]:
-            xpos, ypos = event.GetPositionTuple()
-            p_width, p_height = self.selected_element.GetSizeTuple()
-    
-            self._left = 0 < xpos <= 5
-            self._right = 0 < (p_width - xpos) <= 5
-            self._top = 0 < ypos <= 5
-            self._bottom = 0 < (p_height - ypos) <= 5
-        
+        if [self._left, self._right, self._top, self._bottom] == [None, None, None, None]:
+            self._left, self._right, self._top, self._bottom = \
+                self._GetMousePositions(event.GetPositionTuple(), self.selected_element.GetSizeTuple())
+            
         if True in [self._left, self._right, self._top, self._bottom]:
             old_xpos, old_ypos = self.selected_element.GetPositionTuple()
             old_width, old_height = self.selected_element.GetSize()
