@@ -27,8 +27,11 @@ class MainWindow(wx.Frame):
     
     def OnMainPanelClick(self, event):
         xpos, ypos = event.GetPositionTuple()
-        self._controller.create_text_note(xpos, ypos)
-        TextNode(self._controller, self._resize_manager, self.main_panel, pos=(xpos, ypos))
+        try:
+            TextNode(self._controller, self._resize_manager, self.main_panel, pos=(xpos, ypos))
+        except OverlapException:
+            # Swallow exception since there is no danger and it just exists to keep panels from overlapping
+            pass
 
 class ResizeManager(object):
     
@@ -195,25 +198,25 @@ class ResizeManager(object):
                     continue
                 
                 sibling_left_border, sibling_top_border = sibling.GetPositionTuple()
-                sibling_left_border -= self._MARGIN
-                sibling_top_border -= self._MARGIN
+                sibling_left_border -= self.sibling.MARGIN
+                sibling_top_border -= self.sibling.MARGIN
                 sibling_width, sibling_height = sibling.GetSizeTuple()
-                sibling_right_border = sibling_left_border + sibling_width + 2 * self._MARGIN
-                sibling_bottom_border = sibling_top_border + sibling_height + 2 * self._MARGIN
+                sibling_right_border = sibling_left_border + sibling_width + 2 * self.sibling.MARGIN
+                sibling_bottom_border = sibling_top_border + sibling_height + 2 * self.sibling.MARGIN
                 
-                old_node_left_border = old_xpos - self._MARGIN
-                old_node_top_border = old_ypos - self._MARGIN
+                old_node_left_border = old_xpos - self.selected_element.MARGIN
+                old_node_top_border = old_ypos - self.selected_element.MARGIN
                 old_node_width = old_width
                 old_node_height = old_height
-                old_node_right_border = old_node_left_border + old_node_width + 2 * self._MARGIN
-                old_node_bottom_border = old_node_top_border + old_node_height + 2 * self._MARGIN
+                old_node_right_border = old_node_left_border + old_node_width + 2 * self.selected_element.MARGIN
+                old_node_bottom_border = old_node_top_border + old_node_height + 2 * self.selected_element.MARGIN
                 
-                new_node_left_border = new_xpos - self._MARGIN
-                new_node_top_border = new_ypos - self._MARGIN
+                new_node_left_border = new_xpos - self.selected_element.MARGIN
+                new_node_top_border = new_ypos - self.selected_element.MARGIN
                 new_node_width = new_width
                 new_node_height = new_height
-                new_node_right_border = new_node_left_border + new_node_width + 2 * self._MARGIN
-                new_node_bottom_border = new_node_top_border + new_node_height + 2 * self._MARGIN
+                new_node_right_border = new_node_left_border + new_node_width + 2 * self.selected_element.MARGIN
+                new_node_bottom_border = new_node_top_border + new_node_height + 2 * self.selected_element.MARGIN
                 
                 old_horizontal_overlap = (
                     False if old_node_right_border < sibling_left_border or
@@ -254,12 +257,12 @@ class ResizeManager(object):
             parent_right = parent_left + parent_width
             parent_bottom = parent_top + parent_height
             
-            new_node_left = new_xpos - self._MARGIN
-            new_node_top = new_ypos - self._MARGIN
+            new_node_left = new_xpos - self.selected_element.MARGIN
+            new_node_top = new_ypos - self.selected_element.MARGIN
             new_node_width = new_width
             new_node_height = new_height
-            new_node_right = new_node_left + new_width + 2 * self._MARGIN
-            new_node_bottom = new_node_top + new_height + 2 * self._MARGIN
+            new_node_right = new_node_left + new_width + 2 * self.selected_element.MARGIN
+            new_node_bottom = new_node_top + new_height + 2 * self.selected_element.MARGIN
             
             dragged_too_far_left = True if new_node_left < parent_left else False
             dragged_too_far_up = True if new_node_top < parent_top else False
@@ -279,11 +282,40 @@ class ResizeManager(object):
                 
             self.selected_element.Move(wx.Point(new_xpos, new_ypos))
             self.selected_element.SetSize(wx.Size(new_width, new_height))
+            
+class OverlapException(Exception):
+    pass
 
 class TextNode(wx.Panel):
     
     def __init__(self, controller, resize_manager, parent, pos):
-        super(TextNode, self).__init__(parent, pos=pos, size=wx.Size(200, 50))
+        self.MARGIN = 5
+        
+        WIDTH = 200
+        HEIGHT = 50
+        
+        # Check that there are no siblings where the panel will be initialized first
+        for sibling in parent.GetChildren():
+            node_left, node_top = pos
+            node_left -= self.MARGIN
+            node_top -= self.MARGIN
+            node_right = node_left + WIDTH + 2 * self.MARGIN
+            node_bottom = node_top + HEIGHT + 2 * self.MARGIN
+            
+            sibling_left, sibling_top = sibling.GetPositionTuple()
+            sibling_left -= self.MARGIN
+            sibling_top -= self.MARGIN
+            sibling_width, sibling_height = sibling.GetSizeTuple()
+            sibling_right = sibling_left + sibling_width + 2 * self.MARGIN
+            sibling_bottom = sibling_top + sibling_height + 2 * self.MARGIN
+            
+            horizontal_overlap = False if node_right < sibling_left or node_left > sibling_right else True
+            vertical_overlap = False if node_bottom < sibling_top or node_top > sibling_bottom else True
+            
+            if horizontal_overlap and vertical_overlap:
+                raise OverlapException("The last text node if created would have overlapped another node")
+                    
+        super(TextNode, self).__init__(parent, pos=pos, size=wx.Size(WIDTH, HEIGHT))
         self._controller = controller
         xpos, ypos = pos
         self._text_note = self._controller.create_text_note(xpos, ypos)
