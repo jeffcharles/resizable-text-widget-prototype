@@ -198,32 +198,55 @@ class ResizeManager(object):
                 sibling_left_border -= self._MARGIN
                 sibling_top_border -= self._MARGIN
                 sibling_width, sibling_height = sibling.GetSizeTuple()
-                sibling_right_border = sibling_left_border + sibling_width + self._MARGIN
-                sibling_bottom_border = sibling_top_border + sibling_height + self._MARGIN
+                sibling_right_border = sibling_left_border + sibling_width + 2 * self._MARGIN
+                sibling_bottom_border = sibling_top_border + sibling_height + 2 * self._MARGIN
                 
-                node_left_border = new_xpos
-                node_top_border = new_ypos
-                node_left_border -= self._MARGIN
-                node_top_border -= self._MARGIN
-                node_width = new_width
-                node_height = new_height
-                node_right_border = node_left_border + node_width + self._MARGIN
-                node_bottom_border = node_top_border + node_height + self._MARGIN
+                old_node_left_border = old_xpos - self._MARGIN
+                old_node_top_border = old_ypos - self._MARGIN
+                old_node_width = old_width
+                old_node_height = old_height
+                old_node_right_border = old_node_left_border + old_node_width + 2 * self._MARGIN
+                old_node_bottom_border = old_node_top_border + old_node_height + 2 * self._MARGIN
                 
-                horizontal_overlap = (
-                    False if node_right_border < sibling_left_border or 
-                             node_left_border > sibling_right_border 
+                new_node_left_border = new_xpos - self._MARGIN
+                new_node_top_border = new_ypos - self._MARGIN
+                new_node_width = new_width
+                new_node_height = new_height
+                new_node_right_border = new_node_left_border + new_node_width + 2 * self._MARGIN
+                new_node_bottom_border = new_node_top_border + new_node_height + 2 * self._MARGIN
+                
+                old_horizontal_overlap = (
+                    False if old_node_right_border < sibling_left_border or
+                             old_node_left_border > sibling_right_border
                           else True
                 )
-                vertical_overlap = (
-                    False if node_bottom_border < sibling_top_border or 
-                             node_top_border > sibling_bottom_border 
+                
+                old_vertical_overlap = (
+                    False if old_node_bottom_border < sibling_top_border or
+                             old_node_top_border > sibling_bottom_border
                     else True
                 )
                 
-                if horizontal_overlap and vertical_overlap:
-                    return
-            
+                new_horizontal_overlap = (
+                    False if new_node_right_border < sibling_left_border or 
+                             new_node_left_border > sibling_right_border 
+                          else True
+                )
+                new_vertical_overlap = (
+                    False if new_node_bottom_border < sibling_top_border or 
+                             new_node_top_border > sibling_bottom_border 
+                    else True
+                )
+                
+                if not old_horizontal_overlap and new_horizontal_overlap and new_vertical_overlap:
+                    # Stop x or width changes
+                    new_xpos = old_xpos
+                    new_width = old_width
+                if not old_vertical_overlap and new_vertical_overlap and new_horizontal_overlap:
+                    # Stop y or height changes
+                    new_ypos = old_ypos
+                    new_height = old_height
+                
             self.selected_element.Move(wx.Point(new_xpos, new_ypos))
             self.selected_element.SetSize(wx.Size(new_width, new_height))
 
