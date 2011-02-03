@@ -195,16 +195,16 @@ class ResizeManager(object):
                     continue
                 
                 sibling_left_border, sibling_top_border = sibling.GetPositionTuple()
-                sibling_left_border += self._MARGIN
-                sibling_top_border += self._MARGIN
+                sibling_left_border -= self._MARGIN
+                sibling_top_border -= self._MARGIN
                 sibling_width, sibling_height = sibling.GetSizeTuple()
                 sibling_right_border = sibling_left_border + sibling_width + self._MARGIN
                 sibling_bottom_border = sibling_top_border + sibling_height + self._MARGIN
                 
                 node_left_border = new_xpos
                 node_top_border = new_ypos
-                node_left_border += self._MARGIN
-                node_top_border += self._MARGIN
+                node_left_border -= self._MARGIN
+                node_top_border -= self._MARGIN
                 node_width = new_width
                 node_height = new_height
                 node_right_border = node_left_border + node_width + self._MARGIN
