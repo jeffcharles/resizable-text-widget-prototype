@@ -38,14 +38,13 @@ class ResizeManager(object):
         self.resize_in_progress = False
         
         self._cursor = None
-        self._prev_xpos = None
-        self._prev_ypos = None
         self._left = None
         self._right = None
         self._top = None
         self._bottom = None
         
         self._RESIZABLE_CONTROLS = (TextNode,)
+        self._MARGIN = 5
     
     def _ChangeMouseCursor(self, event):
         cursor_left, cursor_right, cursor_top, cursor_bottom = \
@@ -174,13 +173,57 @@ class ResizeManager(object):
                                   else event.GetY() if height_change == CHANGE_WO_OFFSET 
                                   else old_height)
             
+            # Check that new width and height are greater or equal to the minimum width and height
             if new_width < self.selected_element.min_width:
                 new_xpos = old_xpos
                 new_width = self.selected_element.min_width
             if new_height < self.selected_element.min_height:
                 new_ypos = old_ypos
                 new_height = self.selected_element.min_height
-        
+                
+            # Check that there is no overlap with other elements
+            event_src = event.GetEventObject()
+            if event_src is not self.selected_element and \
+                event_src is not self.selected_element.GetParent() and \
+                event_src not in self.selected_element.GetChildren():
+                
+                return
+            
+            siblings = self.selected_element.GetParent().GetChildren()
+            for sibling in siblings:
+                if sibling is self.selected_element:
+                    continue
+                
+                sibling_left_border, sibling_top_border = sibling.GetPositionTuple()
+                sibling_left_border += self._MARGIN
+                sibling_top_border += self._MARGIN
+                sibling_width, sibling_height = sibling.GetSizeTuple()
+                sibling_right_border = sibling_left_border + sibling_width + self._MARGIN
+                sibling_bottom_border = sibling_top_border + sibling_height + self._MARGIN
+                
+                node_left_border = new_xpos
+                node_top_border = new_ypos
+                node_left_border += self._MARGIN
+                node_top_border += self._MARGIN
+                node_width = new_width
+                node_height = new_height
+                node_right_border = node_left_border + node_width + self._MARGIN
+                node_bottom_border = node_top_border + node_height + self._MARGIN
+                
+                horizontal_overlap = (
+                    False if node_right_border < sibling_left_border or 
+                             node_left_border > sibling_right_border 
+                          else True
+                )
+                vertical_overlap = (
+                    False if node_bottom_border < sibling_top_border or 
+                             node_top_border > sibling_bottom_border 
+                    else True
+                )
+                
+                if horizontal_overlap and vertical_overlap:
+                    return
+            
             self.selected_element.Move(wx.Point(new_xpos, new_ypos))
             self.selected_element.SetSize(wx.Size(new_width, new_height))
 
