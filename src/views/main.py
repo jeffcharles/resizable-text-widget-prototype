@@ -246,6 +246,36 @@ class ResizeManager(object):
                     # Stop y or height changes
                     new_ypos = old_ypos
                     new_height = old_height
+                    
+            # Check that element handles are not being dragged off of the parent panel
+            parent = self.selected_element.GetParent()
+            parent_left, parent_top = parent.GetPositionTuple()
+            parent_width, parent_height = parent.GetSizeTuple()
+            parent_right = parent_left + parent_width
+            parent_bottom = parent_top + parent_height
+            
+            new_node_left = new_xpos - self._MARGIN
+            new_node_top = new_ypos - self._MARGIN
+            new_node_width = new_width
+            new_node_height = new_height
+            new_node_right = new_node_left + new_width + 2 * self._MARGIN
+            new_node_bottom = new_node_top + new_height + 2 * self._MARGIN
+            
+            dragged_too_far_left = True if new_node_left < parent_left else False
+            dragged_too_far_up = True if new_node_top < parent_top else False
+            dragged_too_far_right = True if new_node_right > parent_right else False
+            dragged_too_far_down = True if new_node_bottom > parent_bottom else False
+            
+            if dragged_too_far_left:
+                new_xpos = old_xpos
+                new_width = old_width
+            if dragged_too_far_up:
+                new_ypos = old_ypos
+                new_height = old_height
+            if dragged_too_far_right:
+                new_width = old_width
+            if dragged_too_far_down:
+                new_height = old_height
                 
             self.selected_element.Move(wx.Point(new_xpos, new_ypos))
             self.selected_element.SetSize(wx.Size(new_width, new_height))
