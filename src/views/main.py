@@ -318,6 +318,9 @@ class TextNode(wx.Panel):
         
     @classmethod
     def IsOverlapping(self, pos, parent):
+        """
+        Returns whether or not a text node created at pos with parent parent will overlap another node
+        """
         for sibling in parent.GetChildren():
             node_left, node_top = pos
             node_left -= self.MARGIN
