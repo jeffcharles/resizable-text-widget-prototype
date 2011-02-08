@@ -27,11 +27,8 @@ class MainWindow(wx.Frame):
     
     def OnMainPanelClick(self, event):
         xpos, ypos = event.GetPositionTuple()
-        try:
+        if not TextNode.IsOverlapping((xpos, ypos), self.main_panel):
             TextNode(self._controller, self._resize_manager, self.main_panel, pos=(xpos, ypos))
-        except OverlapException:
-            # Swallow exception since there is no danger and it just exists to keep panels from overlapping
-            pass
 
 class ResizeManager(object):
     
@@ -287,35 +284,18 @@ class OverlapException(Exception):
     pass
 
 class TextNode(wx.Panel):
+
+    MARGIN = 5
+        
+    INITIAL_WIDTH = 200
+    INITIAL_HEIGHT = 50
     
     def __init__(self, controller, resize_manager, parent, pos):
-        self.MARGIN = 5
-        
-        WIDTH = 200
-        HEIGHT = 50
-        
         # Check that there are no siblings where the panel will be initialized first
-        for sibling in parent.GetChildren():
-            node_left, node_top = pos
-            node_left -= self.MARGIN
-            node_top -= self.MARGIN
-            node_right = node_left + WIDTH + 2 * self.MARGIN
-            node_bottom = node_top + HEIGHT + 2 * self.MARGIN
-            
-            sibling_left, sibling_top = sibling.GetPositionTuple()
-            sibling_left -= self.MARGIN
-            sibling_top -= self.MARGIN
-            sibling_width, sibling_height = sibling.GetSizeTuple()
-            sibling_right = sibling_left + sibling_width + 2 * self.MARGIN
-            sibling_bottom = sibling_top + sibling_height + 2 * self.MARGIN
-            
-            horizontal_overlap = False if node_right < sibling_left or node_left > sibling_right else True
-            vertical_overlap = False if node_bottom < sibling_top or node_top > sibling_bottom else True
-            
-            if horizontal_overlap and vertical_overlap:
-                raise OverlapException("The last text node if created would have overlapped another node")
+        if self.IsOverlapping(pos, parent):
+            raise OverlapException("The last text node if created would have overlapped another node")
                     
-        super(TextNode, self).__init__(parent, pos=pos, size=wx.Size(WIDTH, HEIGHT))
+        super(TextNode, self).__init__(parent, pos=pos, size=wx.Size(self.INITIAL_WIDTH, self.INITIAL_HEIGHT))
         self._controller = controller
         xpos, ypos = pos
         self._text_note = self._controller.create_text_note(xpos, ypos)
@@ -335,6 +315,29 @@ class TextNode(wx.Panel):
         self.SetAutoLayout(True)
         self.SetSizer(self.sizer)
         self.Layout()
+        
+    @classmethod
+    def IsOverlapping(self, pos, parent):
+        for sibling in parent.GetChildren():
+            node_left, node_top = pos
+            node_left -= self.MARGIN
+            node_top -= self.MARGIN
+            node_right = node_left + self.INITIAL_WIDTH + 2 * self.MARGIN
+            node_bottom = node_top + self.INITIAL_HEIGHT + 2 * self.MARGIN
+            
+            sibling_left, sibling_top = sibling.GetPositionTuple()
+            sibling_left -= self.MARGIN
+            sibling_top -= self.MARGIN
+            sibling_width, sibling_height = sibling.GetSizeTuple()
+            sibling_right = sibling_left + sibling_width + 2 * self.MARGIN
+            sibling_bottom = sibling_top + sibling_height + 2 * self.MARGIN
+            
+            horizontal_overlap = False if node_right < sibling_left or node_left > sibling_right else True
+            vertical_overlap = False if node_bottom < sibling_top or node_top > sibling_bottom else True
+            
+            if horizontal_overlap and vertical_overlap:
+                return True
+        return False
     
     def OnTextChanged(self, event):
         self._controller.text_changed(self._text_note, event.GetEventObject().Value)
