@@ -18,7 +18,6 @@ class MainWindow(wx.Frame):
         self.main_panel.Bind(wx.EVT_LEFT_DOWN, self.OnMainPanelClick)
         
         self._resize_manager = ResizeManager(self.main_panel)
-        #self.main_panel.Bind(wx.EVT_MOTION, self._resize_manager.OnMouseMotion)
         
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.Add(self.main_panel, 1, wx.EXPAND)
