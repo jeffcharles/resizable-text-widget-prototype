@@ -135,7 +135,15 @@ class ResizeManager(object):
                                                            old_height, new_xpos, new_ypos, 
                                                            new_width, new_height)
                 
-        # Check that element handles are not being dragged off of the parent panel
+        new_xpos, new_ypos, new_width, new_height = \
+            self._GetValidatedPosAndDimensionsWithParent(old_xpos, old_ypos, old_width, 
+                                                         old_height, new_xpos, new_ypos, 
+                                                         new_width, new_height)
+            
+        return new_xpos, new_ypos, new_width, new_height
+    
+    def _GetValidatedPosAndDimensionsWithParent(self, old_xpos, old_ypos, old_width, old_height, new_xpos, new_ypos, new_width, new_height):
+        """Validate positions and dimensions against parent panel."""
         parent = self.selected_element.GetParent()
         parent_left, parent_top = parent.GetPositionTuple()
         parent_width, parent_height = parent.GetSizeTuple()
