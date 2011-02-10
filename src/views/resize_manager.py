@@ -125,7 +125,10 @@ class ResizeManager(object):
             event_src is not self.selected_element.GetParent() and \
             event_src not in self.selected_element.GetChildren():
             
-            return
+            new_xpos = old_xpos
+            new_ypos = old_ypos
+            new_width = old_width
+            new_height = old_height
         
         siblings = self.selected_element.GetParent().GetChildren()
         for sibling in siblings:
