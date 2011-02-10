@@ -130,6 +130,43 @@ class ResizeManager(object):
             new_width = old_width
             new_height = old_height
         
+        new_xpos, new_ypos, new_width, new_height = \
+            self._GetValidatedPosAndDimensionsWithSiblings(old_xpos, old_ypos, old_width, 
+                                                           old_height, new_xpos, new_ypos, 
+                                                           new_width, new_height)
+                
+        # Check that element handles are not being dragged off of the parent panel
+        parent = self.selected_element.GetParent()
+        parent_left, parent_top = parent.GetPositionTuple()
+        parent_width, parent_height = parent.GetSizeTuple()
+        parent_right = parent_left + parent_width
+        parent_bottom = parent_top + parent_height
+        
+        new_node_left = new_xpos - self.selected_element.MARGIN
+        new_node_top = new_ypos - self.selected_element.MARGIN
+        new_node_right = new_node_left + new_width + 2 * self.selected_element.MARGIN
+        new_node_bottom = new_node_top + new_height + 2 * self.selected_element.MARGIN
+        
+        dragged_too_far_left = True if new_node_left < parent_left else False
+        dragged_too_far_up = True if new_node_top < parent_top else False
+        dragged_too_far_right = True if new_node_right > parent_right else False
+        dragged_too_far_down = True if new_node_bottom > parent_bottom else False
+        
+        if dragged_too_far_left:
+            new_xpos = old_xpos
+            new_width = old_width
+        if dragged_too_far_up:
+            new_ypos = old_ypos
+            new_height = old_height
+        if dragged_too_far_right:
+            new_width = old_width
+        if dragged_too_far_down:
+            new_height = old_height
+            
+        return new_xpos, new_ypos, new_width, new_height
+    
+    def _GetValidatedPosAndDimensionsWithSiblings(self, old_xpos, old_ypos, old_width, old_height, new_xpos, new_ypos, new_width, new_height):
+        """Validate positions against siblings."""
         siblings = self.selected_element.GetParent().GetChildren()
         for sibling in siblings:
             if sibling is self.selected_element:
@@ -144,17 +181,13 @@ class ResizeManager(object):
             
             old_node_left_border = old_xpos - self.selected_element.MARGIN
             old_node_top_border = old_ypos - self.selected_element.MARGIN
-            old_node_width = old_width
-            old_node_height = old_height
-            old_node_right_border = old_node_left_border + old_node_width + 2 * self.selected_element.MARGIN
-            old_node_bottom_border = old_node_top_border + old_node_height + 2 * self.selected_element.MARGIN
+            old_node_right_border = old_node_left_border + old_width + 2 * self.selected_element.MARGIN
+            old_node_bottom_border = old_node_top_border + old_height + 2 * self.selected_element.MARGIN
             
             new_node_left_border = new_xpos - self.selected_element.MARGIN
             new_node_top_border = new_ypos - self.selected_element.MARGIN
-            new_node_width = new_width
-            new_node_height = new_height
-            new_node_right_border = new_node_left_border + new_node_width + 2 * self.selected_element.MARGIN
-            new_node_bottom_border = new_node_top_border + new_node_height + 2 * self.selected_element.MARGIN
+            new_node_right_border = new_node_left_border + new_width + 2 * self.selected_element.MARGIN
+            new_node_bottom_border = new_node_top_border + new_height + 2 * self.selected_element.MARGIN
             
             old_horizontal_overlap = (
                 False if old_node_right_border < sibling_left_border or
@@ -188,36 +221,6 @@ class ResizeManager(object):
                 new_ypos = old_ypos
                 new_height = old_height
                 
-        # Check that element handles are not being dragged off of the parent panel
-        parent = self.selected_element.GetParent()
-        parent_left, parent_top = parent.GetPositionTuple()
-        parent_width, parent_height = parent.GetSizeTuple()
-        parent_right = parent_left + parent_width
-        parent_bottom = parent_top + parent_height
-        
-        new_node_left = new_xpos - self.selected_element.MARGIN
-        new_node_top = new_ypos - self.selected_element.MARGIN
-        new_node_width = new_width
-        new_node_height = new_height
-        new_node_right = new_node_left + new_width + 2 * self.selected_element.MARGIN
-        new_node_bottom = new_node_top + new_height + 2 * self.selected_element.MARGIN
-        
-        dragged_too_far_left = True if new_node_left < parent_left else False
-        dragged_too_far_up = True if new_node_top < parent_top else False
-        dragged_too_far_right = True if new_node_right > parent_right else False
-        dragged_too_far_down = True if new_node_bottom > parent_bottom else False
-        
-        if dragged_too_far_left:
-            new_xpos = old_xpos
-            new_width = old_width
-        if dragged_too_far_up:
-            new_ypos = old_ypos
-            new_height = old_height
-        if dragged_too_far_right:
-            new_width = old_width
-        if dragged_too_far_down:
-            new_height = old_height
-            
         return new_xpos, new_ypos, new_width, new_height
     
     def _OnMouseDrag(self, event):
