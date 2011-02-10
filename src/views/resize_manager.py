@@ -46,31 +46,16 @@ class ResizeManager(object):
         """
         Returns a tuple of integers indicating whether the width or height should change.
         """
-        if self._top and self._left:
-            width_change = self._CHANGE_W_OFFSET
-            height_change = self._CHANGE_W_OFFSET
-        elif self._top and self._right:
-            width_change = self._CHANGE_WO_OFFSET
-            height_change = self._CHANGE_W_OFFSET
-        elif self._bottom and self._left:
-            width_change = self._CHANGE_W_OFFSET
-            height_change = self._CHANGE_WO_OFFSET
-        elif self._bottom and self._right:
-            width_change = self._CHANGE_WO_OFFSET
-            height_change = self._CHANGE_WO_OFFSET
-        elif self._top:
-            width_change = self._NO_CHANGE
-            height_change = self._CHANGE_W_OFFSET
-        elif self._bottom:
-            width_change = self._NO_CHANGE
-            height_change = self._CHANGE_WO_OFFSET
-        elif self._left:
-            width_change = self._CHANGE_W_OFFSET
-            height_change = self._NO_CHANGE
-        elif self._right:
-            width_change = self._CHANGE_WO_OFFSET
-            height_change = self._NO_CHANGE
-        
+        width_change = (
+                             self._CHANGE_W_OFFSET if self._left 
+                        else self._CHANGE_WO_OFFSET if self._right 
+                        else self._NO_CHANGE
+                       )
+        height_change = (
+                              self._CHANGE_W_OFFSET if self._top 
+                         else self._CHANGE_WO_OFFSET if self._bottom 
+                         else self._NO_CHANGE
+                        )
         return width_change, height_change
     
     def _GetMousePositions(self, event_pos, obj_size):
