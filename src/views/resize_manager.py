@@ -77,6 +77,19 @@ class ResizeManager(object):
         
         return (cursor_left, cursor_right, cursor_top, cursor_bottom)
     
+    def _GetNewDimensions(self, old_width, old_height, mouse_pos_x, mouse_pos_y):
+        """
+        Returns the new width and height given the mouse cursor position.
+        """
+        width_change, height_change = self._GetDimensionChanges()
+        new_width = (old_width - mouse_pos_x if width_change == self._CHANGE_W_OFFSET 
+                            else mouse_pos_x if width_change == self._CHANGE_WO_OFFSET
+                            else old_width)
+        new_height = (old_height - mouse_pos_y if height_change == self._CHANGE_W_OFFSET
+                              else mouse_pos_y if height_change == self._CHANGE_WO_OFFSET 
+                              else old_height)
+        return new_width, new_height
+    
     def _GetNewPositions(self, old_xpos, old_ypos, mouse_pos_x, mouse_pos_y):
         """
         Returns the new x and y positions given the mouse cursor position.
@@ -137,16 +150,9 @@ class ResizeManager(object):
         old_xpos, old_ypos = self.selected_element.GetPositionTuple()
         old_width, old_height = self.selected_element.GetSize()
 
-        
-        width_change, height_change = self._GetDimensionChanges()
-        
+        # Get new x and y positions as well as new width and height
         new_xpos, new_ypos = self._GetNewPositions(old_xpos, old_ypos, event.GetX(), event.GetY())
-        new_width = (old_width - event.GetX() if width_change == self._CHANGE_W_OFFSET 
-                            else event.GetX() if width_change == self._CHANGE_WO_OFFSET
-                            else old_width)
-        new_height = (old_height - event.GetY() if height_change == self._CHANGE_W_OFFSET
-                              else event.GetY() if height_change == self._CHANGE_WO_OFFSET 
-                              else old_height)
+        new_width, new_height = self._GetNewDimensions(old_width, old_height, event.GetX(), event.GetY())
         
         # Check that new width and height are greater or equal to the minimum width and height
         if new_width < self.selected_element.min_width:
