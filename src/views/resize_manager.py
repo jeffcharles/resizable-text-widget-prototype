@@ -6,7 +6,6 @@ class ResizeManager(object):
     def __init__(self, top_panel):
         self.top_panel = top_panel
         self.selected_element = None
-        self.resize_in_progress = False
         
         self._cursor = None
         self._left = None
@@ -67,7 +66,6 @@ class ResizeManager(object):
         
         if not event.Dragging():
             self.selected_element = None
-            self.resize_in_progress = False
             self._cursor = None
             self._left = None
             self._right = None
