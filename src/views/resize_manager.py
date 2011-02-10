@@ -142,7 +142,9 @@ class ResizeManager(object):
             
         return new_xpos, new_ypos, new_width, new_height
     
-    def _GetValidatedPosAndDimensionsWithParent(self, old_xpos, old_ypos, old_width, old_height, new_xpos, new_ypos, new_width, new_height):
+    def _GetValidatedPosAndDimensionsWithParent(self, old_xpos, old_ypos, old_width, 
+                                                old_height, new_xpos, new_ypos, 
+                                                new_width, new_height):
         """Validate positions and dimensions against parent panel."""
         parent = self.selected_element.GetParent()
         parent_left, parent_top = parent.GetPositionTuple()
@@ -173,7 +175,9 @@ class ResizeManager(object):
             
         return new_xpos, new_ypos, new_width, new_height
     
-    def _GetValidatedPosAndDimensionsWithSiblings(self, old_xpos, old_ypos, old_width, old_height, new_xpos, new_ypos, new_width, new_height):
+    def _GetValidatedPosAndDimensionsWithSiblings(self, old_xpos, old_ypos, old_width, 
+                                                  old_height, new_xpos, new_ypos, 
+                                                  new_width, new_height):
         """Validate positions against siblings."""
         siblings = self.selected_element.GetParent().GetChildren()
         for sibling in siblings:
@@ -275,8 +279,10 @@ class ResizeManager(object):
         old_width, old_height = self.selected_element.GetSize()
 
         # Get new x and y positions as well as new width and height
-        new_xpos, new_ypos = self._GetNewPositions(old_xpos, old_ypos, event.GetX(), event.GetY())
-        new_width, new_height = self._GetNewDimensions(old_width, old_height, event.GetX(), event.GetY())
+        new_xpos, new_ypos = \
+            self._GetNewPositions(old_xpos, old_ypos, event.GetX(), event.GetY())
+        new_width, new_height = \
+            self._GetNewDimensions(old_width, old_height, event.GetX(), event.GetY())
         
         new_xpos, new_ypos, new_width, new_height = \
             self._GetValidatedPosAndDimensions(old_xpos, old_ypos, old_width, 
