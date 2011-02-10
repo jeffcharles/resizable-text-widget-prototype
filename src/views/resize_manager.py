@@ -3,6 +3,10 @@ import wx
 
 class ResizeManager(object):
     
+    _NO_CHANGE = 0
+    _CHANGE_W_OFFSET = 1
+    _CHANGE_WO_OFFSET = 2
+    
     def __init__(self, top_panel):
         self.top_panel = top_panel
         self.selected_element = None
@@ -37,6 +41,37 @@ class ResizeManager(object):
             self._cursor = wx.CURSOR_SIZENS
         else:
             self._cursor = wx.CURSOR_ARROW
+            
+    def _GetDimensionChanges(self):
+        """
+        Returns a tuple of integers indicating whether the width or height should change.
+        """
+        if self._top and self._left:
+            width_change = self._CHANGE_W_OFFSET
+            height_change = self._CHANGE_W_OFFSET
+        elif self._top and self._right:
+            width_change = self._CHANGE_WO_OFFSET
+            height_change = self._CHANGE_W_OFFSET
+        elif self._bottom and self._left:
+            width_change = self._CHANGE_W_OFFSET
+            height_change = self._CHANGE_WO_OFFSET
+        elif self._bottom and self._right:
+            width_change = self._CHANGE_WO_OFFSET
+            height_change = self._CHANGE_WO_OFFSET
+        elif self._top:
+            width_change = self._NO_CHANGE
+            height_change = self._CHANGE_W_OFFSET
+        elif self._bottom:
+            width_change = self._NO_CHANGE
+            height_change = self._CHANGE_WO_OFFSET
+        elif self._left:
+            width_change = self._CHANGE_W_OFFSET
+            height_change = self._NO_CHANGE
+        elif self._right:
+            width_change = self._CHANGE_WO_OFFSET
+            height_change = self._NO_CHANGE
+        
+        return width_change, height_change
     
     def _GetMousePositions(self, event_pos, obj_size):
         """
@@ -109,43 +144,15 @@ class ResizeManager(object):
         old_width, old_height = self.selected_element.GetSize()
 
         xpos_change, ypos_change = self._GetPositionChanges()
-        
-        NO_CHANGE = 0
-        CHANGE_W_OFFSET = 1
-        CHANGE_WO_OFFSET = 2
-    
-        if self._top and self._left:
-            width_change = CHANGE_W_OFFSET
-            height_change = CHANGE_W_OFFSET
-        elif self._top and self._right:
-            width_change = CHANGE_WO_OFFSET
-            height_change = CHANGE_W_OFFSET
-        elif self._bottom and self._left:
-            width_change = CHANGE_W_OFFSET
-            height_change = CHANGE_WO_OFFSET
-        elif self._bottom and self._right:
-            width_change = CHANGE_WO_OFFSET
-            height_change = CHANGE_WO_OFFSET
-        elif self._top:
-            width_change = NO_CHANGE
-            height_change = CHANGE_W_OFFSET
-        elif self._bottom:
-            width_change = NO_CHANGE
-            height_change = CHANGE_WO_OFFSET
-        elif self._left:
-            width_change = CHANGE_W_OFFSET
-            height_change = NO_CHANGE
-        elif self._right:
-            width_change = CHANGE_WO_OFFSET
-            height_change = NO_CHANGE
+        width_change, height_change = self._GetDimensionChanges()
         
         new_xpos = old_xpos + event.GetX() if xpos_change else old_xpos
         new_ypos = old_ypos + event.GetY() if ypos_change else old_ypos
-        new_width = (old_width - event.GetX() if width_change == CHANGE_W_OFFSET 
-                            else event.GetX() if width_change == CHANGE_WO_OFFSET
+        new_width = (old_width - event.GetX() if width_change == self._CHANGE_W_OFFSET 
+                            else event.GetX() if width_change == self._CHANGE_WO_OFFSET
                             else old_width)
-        new_height = (old_height - event.GetY() if height_change == CHANGE_W_OFFSET
-                              else event.GetY() if height_change == CHANGE_WO_OFFSET 
+        new_height = (old_height - event.GetY() if height_change == self._CHANGE_W_OFFSET
+                              else event.GetY() if height_change == self._CHANGE_WO_OFFSET 
                               else old_height)
         
         # Check that new width and height are greater or equal to the minimum width and height
