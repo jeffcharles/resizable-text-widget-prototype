@@ -77,6 +77,15 @@ class ResizeManager(object):
         
         return (cursor_left, cursor_right, cursor_top, cursor_bottom)
     
+    def _GetNewPositions(self, old_xpos, old_ypos, mouse_pos_x, mouse_pos_y):
+        """
+        Returns the new x and y positions given the mouse cursor position.
+        """ 
+        xpos_change, ypos_change = self._GetPositionChanges()
+        new_xpos = old_xpos + mouse_pos_x if xpos_change else old_xpos
+        new_ypos = old_ypos + mouse_pos_y if ypos_change else old_ypos
+        return new_xpos, new_ypos
+    
     def _GetPositionChanges(self):
         """
         Returns a tuple of booleans indicating whether the x or y positions should change.
@@ -128,11 +137,10 @@ class ResizeManager(object):
         old_xpos, old_ypos = self.selected_element.GetPositionTuple()
         old_width, old_height = self.selected_element.GetSize()
 
-        xpos_change, ypos_change = self._GetPositionChanges()
+        
         width_change, height_change = self._GetDimensionChanges()
         
-        new_xpos = old_xpos + event.GetX() if xpos_change else old_xpos
-        new_ypos = old_ypos + event.GetY() if ypos_change else old_ypos
+        new_xpos, new_ypos = self._GetNewPositions(old_xpos, old_ypos, event.GetX(), event.GetY())
         new_width = (old_width - event.GetX() if width_change == self._CHANGE_W_OFFSET 
                             else event.GetX() if width_change == self._CHANGE_WO_OFFSET
                             else old_width)
