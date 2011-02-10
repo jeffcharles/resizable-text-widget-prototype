@@ -57,6 +57,37 @@ class ResizeManager(object):
         
         return (cursor_left, cursor_right, cursor_top, cursor_bottom)
     
+    def _GetPositionChanges(self):
+        """
+        Returns a tuple of booleans indicating whether the x or y positions should change.
+        """
+        if self._top and self._left:
+            xpos_change = True
+            ypos_change = True
+        elif self._top and self._right:
+            xpos_change = False
+            ypos_change = True
+        elif self._bottom and self._left:
+            xpos_change = True
+            ypos_change = False
+        elif self._bottom and self._right:
+            xpos_change = False
+            ypos_change = False
+        elif self._top:
+            xpos_change = False
+            ypos_change = True
+        elif self._bottom:
+            xpos_change = False
+            ypos_change = False
+        elif self._left:
+            xpos_change = True
+            ypos_change = False
+        elif self._right:
+            xpos_change = False
+            ypos_change = False
+            
+        return xpos_change, ypos_change
+    
     def _OnMouseDrag(self, event):
         # Determine selected element
         if self.selected_element is None:
@@ -99,49 +130,35 @@ class ResizeManager(object):
         # Get current x and y positions as well as current width and height
         old_xpos, old_ypos = self.selected_element.GetPositionTuple()
         old_width, old_height = self.selected_element.GetSize()
+
+        xpos_change, ypos_change = self._GetPositionChanges()
         
         NO_CHANGE = 0
         CHANGE_W_OFFSET = 1
         CHANGE_WO_OFFSET = 2
     
         if self._top and self._left:
-            xpos_change = True
-            ypos_change = True
             width_change = CHANGE_W_OFFSET
             height_change = CHANGE_W_OFFSET
         elif self._top and self._right:
-            xpos_change = False
-            ypos_change = True
             width_change = CHANGE_WO_OFFSET
             height_change = CHANGE_W_OFFSET
         elif self._bottom and self._left:
-            xpos_change = True
-            ypos_change = False
             width_change = CHANGE_W_OFFSET
             height_change = CHANGE_WO_OFFSET
         elif self._bottom and self._right:
-            xpos_change = False
-            ypos_change = False
             width_change = CHANGE_WO_OFFSET
             height_change = CHANGE_WO_OFFSET
         elif self._top:
-            xpos_change = False
-            ypos_change = True
             width_change = NO_CHANGE
             height_change = CHANGE_W_OFFSET
         elif self._bottom:
-            xpos_change = False
-            ypos_change = False
             width_change = NO_CHANGE
             height_change = CHANGE_WO_OFFSET
         elif self._left:
-            xpos_change = True
-            ypos_change = False
             width_change = CHANGE_W_OFFSET
             height_change = NO_CHANGE
         elif self._right:
-            xpos_change = False
-            ypos_change = False
             width_change = CHANGE_WO_OFFSET
             height_change = NO_CHANGE
         
