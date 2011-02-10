@@ -47,11 +47,7 @@ class TextNode(wx.Panel):
             node_top -= self.MARGIN
             node_right = node_left + self.INITIAL_WIDTH + 2 * self.MARGIN
             node_bottom = node_top + self.INITIAL_HEIGHT + 2 * self.MARGIN
-            '''
-Created on 2011-02-08
-
-@author: jeff
-'''
+            
             sibling_left, sibling_top = sibling.GetPositionTuple()
             sibling_left -= self.MARGIN
             sibling_top -= self.MARGIN
