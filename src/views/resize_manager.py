@@ -14,7 +14,6 @@ class ResizeManager(object):
         self._bottom = None
         
         self._RESIZABLE_CONTROLS = (TextNode,)
-        self._MARGIN = 5
     
     def _ChangeMouseCursor(self, event):
         cursor_left, cursor_right, cursor_top, cursor_bottom = \
