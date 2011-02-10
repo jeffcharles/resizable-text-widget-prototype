@@ -61,31 +61,8 @@ class ResizeManager(object):
         """
         Returns a tuple of booleans indicating whether the x or y positions should change.
         """
-        if self._top and self._left:
-            xpos_change = True
-            ypos_change = True
-        elif self._top and self._right:
-            xpos_change = False
-            ypos_change = True
-        elif self._bottom and self._left:
-            xpos_change = True
-            ypos_change = False
-        elif self._bottom and self._right:
-            xpos_change = False
-            ypos_change = False
-        elif self._top:
-            xpos_change = False
-            ypos_change = True
-        elif self._bottom:
-            xpos_change = False
-            ypos_change = False
-        elif self._left:
-            xpos_change = True
-            ypos_change = False
-        elif self._right:
-            xpos_change = False
-            ypos_change = False
-            
+        xpos_change = self._left
+        ypos_change = self._top
         return xpos_change, ypos_change
     
     def _OnMouseDrag(self, event):
