@@ -252,7 +252,7 @@ class ResizeManager(object):
             
         # If there is at least one mouse position
         if True in [self._left, self._right, self._top, self._bottom]:
-            self._OnResize(event)
+            self._OnResize(event.GetEventObject(), event.GetX(), event.GetY())
     
     def OnMouseMotion(self, event):
         # Update mouse cursor
@@ -273,21 +273,21 @@ class ResizeManager(object):
         
         self._OnMouseDrag(event)
         
-    def _OnResize(self, event):
+    def _OnResize(self, event_src, event_x, event_y):
         # Get current x and y positions as well as current width and height
         old_xpos, old_ypos = self.selected_element.GetPositionTuple()
         old_width, old_height = self.selected_element.GetSize()
 
         # Get new x and y positions as well as new width and height
         new_xpos, new_ypos = \
-            self._GetNewPositions(old_xpos, old_ypos, event.GetX(), event.GetY())
+            self._GetNewPositions(old_xpos, old_ypos, event_x, event_y)
         new_width, new_height = \
-            self._GetNewDimensions(old_width, old_height, event.GetX(), event.GetY())
+            self._GetNewDimensions(old_width, old_height, event_x, event_y)
         
         new_xpos, new_ypos, new_width, new_height = \
             self._GetValidatedPosAndDimensions(old_xpos, old_ypos, old_width, 
                                                old_height, new_xpos, new_ypos, 
-                                               new_width, new_height, event.GetEventObject())
+                                               new_width, new_height, event_src)
         
         self.selected_element.Move(wx.Point(new_xpos, new_ypos))
         self.selected_element.SetSize(wx.Size(new_width, new_height))
