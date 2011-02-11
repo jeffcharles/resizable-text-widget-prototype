@@ -235,10 +235,10 @@ class ResizeManager(object):
                 
         return new_xpos, new_ypos, new_width, new_height
     
-    def _OnMouseDrag(self, event):
+    def _OnMouseDrag(self, event_src, event_pos):
         # Determine selected element
         if self.selected_element is None:
-            self.selected_element = event.GetEventObject()
+            self.selected_element = event_src
         
         # Make sure selected element is resizable
         if type(self.selected_element) not in self._RESIZABLE_CONTROLS:
@@ -248,15 +248,18 @@ class ResizeManager(object):
         # Establish a mouse position
         if [self._left, self._right, self._top, self._bottom] == [None, None, None, None]:
             self._left, self._right, self._top, self._bottom = \
-                self._GetMousePositions(event.GetPositionTuple(), self.selected_element.GetSizeTuple())
+                self._GetMousePositions(event_pos, self.selected_element.GetSizeTuple())
             
         # If there is at least one mouse position
         if True in [self._left, self._right, self._top, self._bottom]:
-            self._OnResize(event.GetEventObject(), event.GetX(), event.GetY())
+            event_x, event_y = event_pos
+            self._OnResize(event_src, event_x, event_y)
     
     def OnMouseMotion(self, event):
+        event_src = event.GetEventObject()
+        
         # Update mouse cursor
-        if type(event.GetEventObject()) in self._RESIZABLE_CONTROLS:
+        if type(event_src) in self._RESIZABLE_CONTROLS:
             if self._cursor is None: 
                 self._ChangeMouseCursor(event)
             event.GetEventObject().SetCursor(wx.StockCursor(self._cursor))
@@ -271,7 +274,7 @@ class ResizeManager(object):
             self._bottom = None
             return
         
-        self._OnMouseDrag(event)
+        self._OnMouseDrag(event_src, event.GetPositionTuple())
         
     def _OnResize(self, event_src, event_x, event_y):
         # Get current x and y positions as well as current width and height
