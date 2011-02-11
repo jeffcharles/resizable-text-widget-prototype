@@ -19,9 +19,9 @@ class ResizeManager(object):
         
         self._RESIZABLE_CONTROLS = (TextNode,)
     
-    def _ChangeMouseCursor(self, event):
+    def _ChangeMouseCursor(self, event_src, event_pos):
         cursor_left, cursor_right, cursor_top, cursor_bottom = \
-            self._GetMousePositions(event.GetPositionTuple(), event.GetEventObject().GetSizeTuple())
+            self._GetMousePositions(event_pos, event_src.GetSizeTuple())
 
         if cursor_left and cursor_top:
             self._cursor = wx.CURSOR_SIZENWSE
@@ -257,11 +257,12 @@ class ResizeManager(object):
     
     def OnMouseMotion(self, event):
         event_src = event.GetEventObject()
+        event_pos = event.GetPositionTuple()
         
         # Update mouse cursor
         if type(event_src) in self._RESIZABLE_CONTROLS:
             if self._cursor is None: 
-                self._ChangeMouseCursor(event)
+                self._ChangeMouseCursor(event_src, event_pos)
             event.GetEventObject().SetCursor(wx.StockCursor(self._cursor))
         
         # Reset if not dragging
@@ -274,7 +275,7 @@ class ResizeManager(object):
             self._bottom = None
             return
         
-        self._OnMouseDrag(event_src, event.GetPositionTuple())
+        self._OnMouseDrag(event_src, event_pos)
         
     def _OnResize(self, event_src, event_x, event_y):
         # Get current x and y positions as well as current width and height
